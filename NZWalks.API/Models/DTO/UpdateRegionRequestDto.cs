@@ -1,31 +1,21 @@
 ﻿using NZWalks.API.Models.Domain;
+using System.ComponentModel.DataAnnotations;
 
 namespace NZWalks.API.Models.DTO
 {
     public class UpdateRegionRequestDto
     {
         #region Properties
+        [Required]
+        [MinLength(3, ErrorMessage = "Code has to be a minimum of 3 characters")]
+        [MaxLength(3, ErrorMessage = "Code has to be a maximum of 3 characters")]
         public string Code { get; set; }
-        public string Name { get; set; }
-        public string? RegionImageUrl { get; set; }
-        #endregion
 
-        #region Constructors
-        public UpdateRegionRequestDto()
-        {
-        }
-        public UpdateRegionRequestDto(string code, string name, string? regionImageUrl)
-        {
-            Code = code;
-            Name = name;
-            RegionImageUrl = regionImageUrl;
-        }
-        public UpdateRegionRequestDto(Region region)
-        {
-            Code = region.Code;
-            Name = region.Name;
-            RegionImageUrl = region.RegionImageUrl;
-        }
+        [Required]
+        [MaxLength(100, ErrorMessage = "Name has to be a maximum of 100 characters")]
+        public string Name { get; set; }
+
+        public string? RegionImageUrl { get; set; }
         #endregion
     }
 }
