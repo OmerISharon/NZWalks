@@ -18,17 +18,43 @@ namespace NZWalks.API.Repositories
             this.dbContext = dbContext;
             this.dbSet = dbContext.Set<T>();
         }
-        public async Task<List<T>> GetAllAsync()
+        public async Task<List<T>> GetAllAsync(string? filterOn = null, string? filterQuery = null,
+                                                string? sortBy = null, bool isAscending = true,
+                                                int pageNumber = 1, int pageSize = 1000)
         {
             var list = new List<T>();
 
             if (typeof(T) == typeof(Walk))
-                list = await dbSet
-                    .Include("Difficulty")
-                    .Include("Region")
-                    .ToListAsync();
+                list = await dbSet.Include("Difficulty").Include("Region").AsQueryable<T>().ToListAsync();
             else
-                list = await dbSet.ToListAsync();
+                list = await dbSet.AsQueryable<T>().ToListAsync();
+
+            //Filtering
+            if (string.IsNullOrWhiteSpace(filterOn) == false && string.IsNullOrWhiteSpace(filterQuery) == false)
+            {
+                var propertyInfo = typeof(T).GetProperty(filterOn, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+
+                if (propertyInfo != null)
+                    list = list.Where(x => propertyInfo.GetValue(x, null).ToString().Contains(filterQuery, StringComparison.OrdinalIgnoreCase)).ToList();
+            }
+
+            //Sorting
+            if (string.IsNullOrWhiteSpace(sortBy) == false)
+            {
+                var propertyInfo = typeof(T).GetProperty(sortBy, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+
+                if (propertyInfo != null)
+                {
+                    if (isAscending == true)
+                        list = list.OrderBy(x => propertyInfo.GetValue(x, null)).ToList();
+                    else
+                        list = list.OrderByDescending(x => propertyInfo.GetValue(x, null)).ToList();
+                } 
+            }
+
+            //Pagination
+            var skipResults = (pageNumber -1) * pageSize;
+            list = list.Skip(skipResults).Take(pageSize).ToList();
 
             return list;
         }

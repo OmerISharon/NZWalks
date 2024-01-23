@@ -32,10 +32,12 @@ namespace NZWalks.API.Controllers
         // GET ALL REGIONS
         // GET: https://localhost:portnumber/api/regions
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? filterOn, [FromQuery] string? filterQuery,
+            [FromQuery] string? sortBy, [FromQuery] bool? isAscending,
+            [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 1000)
         {
             // Get data from database
-            var regionsDomain = await regionRepository.GetAllAsync();
+            var regionsDomain = await regionRepository.GetAllAsync(filterOn, filterQuery, sortBy, isAscending ?? true, pageNumber, pageSize);
 
             // Map Domain Model to DTO (Data Transfer Object)
             var regionsDto = mapper.Map<List<RegionDto>>(regionsDomain);
